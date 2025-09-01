@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Pomodoro Timer</string>
+    <string name="default_duration">25:00</string>
+    <string name="default_short_break">05:00</string>
+    <string name="default_long_break">15:00</string>
+    <string name="setting_timer">TIMER</string>
+    <string name="setting_notification">NOTIFICATION</string>
+    <string name="label_pomodoro">Pomodoro</string>
+    <string name="label_short_break">Short Break</string>
+    <string name="label_long_break">Long Break</string>
+    <string name="label_system_notification">System Notification</string>
+    <string name="label_alert_sound">Alert Sound</string>
+</resources>
