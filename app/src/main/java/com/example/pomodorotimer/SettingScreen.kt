@@ -32,7 +32,9 @@ import androidx.compose.ui.unit.dp
 import com.example.pomodorotimer.ui.theme.PomodoroTimerTheme
 
 @Composable
-fun SettingView(){
+fun SettingView(
+    modifier: Modifier = Modifier
+){
     Column(
         modifier = Modifier
             .fillMaxHeight()
