@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="default_duration">25</integer>
+    <integer name="default_short_break">5</integer>
+    <integer name="default_long_break">15</integer>
+</resources>
