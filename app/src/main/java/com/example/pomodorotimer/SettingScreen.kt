@@ -16,6 +16,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -30,9 +31,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.pomodorotimer.ui.theme.PomodoroTimerTheme
+import kotlin.getValue
+
 
 @Composable
 fun SettingView(
+    viewModel: SharedDataViewModel,
     modifier: Modifier = Modifier
 ){
     Column(
@@ -42,48 +46,57 @@ fun SettingView(
             .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        TimerSetting()
-        NotificationSetting()
+        TimerSetting(viewModel = viewModel)
+        NotificationSetting(viewModel = viewModel)
     }
 }
 
 @Composable
-fun TimerSetting(){
+fun TimerSetting(
+    viewModel: SharedDataViewModel
+){
     Column(modifier = Modifier.padding(10.dp)){
         Text(text = "TIMER", modifier = Modifier.padding(10.dp))
+        val pomodoro by viewModel.pomodoroTime.collectAsState()
+        val shortBreak by viewModel.shortBreakTime.collectAsState()
+        val longBreak by viewModel.longBreakTime.collectAsState()
+
         Card{
             Column{
-                SettingRowWithTextField(stringResource(R.string.label_pomodoro), "25")
+                SettingRowWithTextField(PrefKeys.KEY_POMODORO_TIME, pomodoro, viewModel)
                 CustomHorizontalDivider()
-                SettingRowWithTextField(stringResource(R.string.label_short_break), "5")
+                SettingRowWithTextField(PrefKeys.KEY_SHORT_BREAK_TIME, shortBreak, viewModel)
                 CustomHorizontalDivider()
-                SettingRowWithTextField(stringResource(R.string.label_long_break),  "15")
+                SettingRowWithTextField(PrefKeys.KEY_LONG_BREAK_TIME, longBreak, viewModel)
             }
         }
-
     }
 }
 
 @Composable
-fun NotificationSetting(){
+fun NotificationSetting(
+    viewModel: SharedDataViewModel,
+){
     Column(
         modifier = Modifier.padding(10.dp)
     ){
         Text(text = "NOTIFICATION", modifier = Modifier.padding(10.dp))
         Card{
-            SettingRowWithSwitch(stringResource(R.string.label_system_notification))
+            val checked by viewModel.ifNotification.collectAsState()
+            SettingRowWithSwitch(PrefKeys.KEY_IF_NOTIFICATION, checked, viewModel)
         }
         Spacer(modifier = Modifier.height(10.dp))
         Card{
             Column {
-                SettingRowWithSwitch(stringResource(R.string.label_alert_sound))
+                val checked by viewModel.ifSound.collectAsState()
+                SettingRowWithSwitch(PrefKeys.KEY_IF_SOUND, checked,viewModel)
                 CustomHorizontalDivider()
-
                 // Use a slider to control volume
                 val context = LocalContext.current
                 val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
                 val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-                var volume by remember { mutableIntStateOf(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)) }
+                var volume by remember {
+                    mutableIntStateOf(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)) }
                 Slider(
                     value = volume.toFloat(),
                     onValueChange = {
@@ -91,7 +104,8 @@ fun NotificationSetting(){
                         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0)
                     },
                     steps = 5,
-                    valueRange = 0f..maxVolume.toFloat()
+                    valueRange = 0f..maxVolume.toFloat(),
+                    enabled = checked
                 )
             }
         }
@@ -99,19 +113,20 @@ fun NotificationSetting(){
 }
 
 @Composable
-fun SettingRowWithTextField(label: String, value: String){
+fun SettingRowWithTextField(key: String, value: Int, viewModel: SharedDataViewModel){
     Row(
         modifier = Modifier.fillMaxWidth().padding(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ){
-        Text(text = label, modifier = Modifier.weight(1f))
+        Text(text = key, modifier = Modifier.weight(1f))
         Spacer(modifier = Modifier.weight(1f))
 
-        var text by remember { mutableStateOf(value) }
+        var text by remember { mutableStateOf(value.toString()) }
         TextField(
             value = text,
             onValueChange = { newText ->
                 text = newText
+                viewModel.updateIntValue(key, text.toInt())
             },
             suffix = { Text(" min") },
             singleLine = true,
@@ -122,17 +137,18 @@ fun SettingRowWithTextField(label: String, value: String){
 }
 
 @Composable
-fun SettingRowWithSwitch(text: String){
+fun SettingRowWithSwitch(key: String, value: Boolean, viewModel: SharedDataViewModel){
     Row(
         modifier = Modifier.fillMaxWidth().padding(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ){
-        var checked by remember { mutableStateOf(true) }
-        Text( text = text, modifier = Modifier.weight(1f))
+        var checked by remember { mutableStateOf(value) }
+        Text( text = key, modifier = Modifier.weight(1f))
         Switch(
             checked = checked,
             onCheckedChange = {
                 checked = it
+                viewModel.updateBooleanValue(key, it)
             }
         )
     }
@@ -143,10 +159,11 @@ fun CustomHorizontalDivider(){
     HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(12.dp, 0.dp))
 }
 
+/*
 @Preview(showBackground = true)
 @Composable
 fun SettingViewPreview(){
     PomodoroTimerTheme {
-        SettingView()
+        SettingView(viewModel = viewModel())
     }
-}
+}*/
