@@ -2,4 +2,9 @@
     <string name="app_name">Pomodoro Timer</string>
     <string name="setting_timer">TIMER</string>
     <string name="setting_notification">NOTIFICATION</string>
+    <string name="channel_name">"Pomodoro Notification"</string>
+    <string name="channel_description">"Pomodoro countdown ends"</string>
+    <string name="notification_title">"Pomodoro Timer"</string>
+    <string name="notification_message_break">"Congratulations! You can take a break right now."</string>
+    <string name="notification_message_new">"Let's start a new Pomodoro!"</string>
 </resources>

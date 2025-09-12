@@ -7,6 +7,6 @@ import java.util.Date
 @Entity(tableName="records")
 data class Record(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val duration: Int,
-    val date: Date
+    val duration: Double,
+    val date: String
 )

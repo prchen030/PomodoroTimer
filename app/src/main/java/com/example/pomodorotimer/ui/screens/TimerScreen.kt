@@ -1,9 +1,7 @@
-package com.example.pomodorotimer
+package com.example.pomodorotimer.ui.screens
 
 import android.annotation.SuppressLint
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
+import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -23,19 +21,33 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import com.example.pomodorotimer.ui.theme.PomodoroTimerTheme
+import androidx.core.content.ContextCompat.getString
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.pomodorotimer.R
+import com.example.pomodorotimer.SharedDataViewModel
+import com.example.pomodorotimer.TimerStates
+import com.example.pomodorotimer.showNotification
+
+@Composable
+fun TimerScreen(
+    modifier: Modifier = Modifier,
+    viewModel: SharedDataViewModel = viewModel()
+
+){
+    TimerView(modifier = modifier, viewModel = viewModel)
+}
+
 
 @Composable
 fun TimerView(
-    viewModel: SharedDataViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier,
+    viewModel: SharedDataViewModel
 ){
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxHeight()
             .fillMaxWidth()
             .padding(48.dp),
@@ -136,7 +148,16 @@ private fun stopCountDown(){
 
 }
 
-private fun checkState(isBreak: Boolean, count: Int): TimerStates{
+// If countdown end, send a notification
+private fun sendNotification(context: Context, isBreak: Boolean){
+    if(isBreak){
+        showNotification(context, getString(context, R.string.notification_message_break))
+    }else{
+        showNotification(context, getString(context, R.string.notification_message_new))
+    }
+}
+
+private fun checkState(isBreak: Boolean, count: Int): TimerStates {
     return if(!isBreak){
         TimerStates.POMODORO
     }else{

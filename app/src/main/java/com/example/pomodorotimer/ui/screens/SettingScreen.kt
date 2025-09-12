@@ -1,7 +1,8 @@
-package com.example.pomodorotimer
+package com.example.pomodorotimer.ui.screens
 
 import android.content.Context
 import android.media.AudioManager
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,7 +15,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -25,49 +25,61 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.pomodorotimer.ui.theme.PomodoroTimerTheme
-import kotlin.getValue
+import androidx.core.content.ContextCompat.getString
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import com.example.pomodorotimer.PrefKeys
+import com.example.pomodorotimer.R
+import com.example.pomodorotimer.RequestNotificationPermission
+import com.example.pomodorotimer.Screen
+import com.example.pomodorotimer.SharedDataViewModel
+import com.example.pomodorotimer.createNotificationChannel
+import com.example.pomodorotimer.showNotification
+
+@Composable
+fun SettingScreen(
+    modifier: Modifier = Modifier,
+    viewModel: SharedDataViewModel = viewModel(),
+    navController: NavHostController
+){
+    SettingView(modifier = modifier, viewModel = viewModel, navController = navController)
+}
 
 
 @Composable
 fun SettingView(
+    modifier: Modifier,
     viewModel: SharedDataViewModel,
-    modifier: Modifier = Modifier
+    navController: NavHostController
 ){
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxHeight()
             .fillMaxWidth()
             .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        TimerSetting(viewModel = viewModel)
-        NotificationSetting(viewModel = viewModel)
+        TimerSetting(modifier = modifier, viewModel = viewModel, navController = navController)
+        NotificationSetting(modifier = modifier, viewModel = viewModel)
     }
 }
 
 @Composable
 fun TimerSetting(
-    viewModel: SharedDataViewModel
+    modifier: Modifier,
+    viewModel: SharedDataViewModel,
+    navController: NavHostController
 ){
-    Column(modifier = Modifier.padding(10.dp)){
+    Column(modifier = modifier.padding(10.dp)){
         Text(text = "TIMER", modifier = Modifier.padding(10.dp))
-        val pomodoro by viewModel.pomodoroTime.collectAsState()
-        val shortBreak by viewModel.shortBreakTime.collectAsState()
-        val longBreak by viewModel.longBreakTime.collectAsState()
-
         Card{
             Column{
-                SettingRowWithTextField(PrefKeys.KEY_POMODORO_TIME, pomodoro, viewModel)
+                SettingRowWithText(PrefKeys.KEY_POMODORO_TIME, viewModel, navController)
                 CustomHorizontalDivider()
-                SettingRowWithTextField(PrefKeys.KEY_SHORT_BREAK_TIME, shortBreak, viewModel)
+                SettingRowWithText(PrefKeys.KEY_SHORT_BREAK_TIME,  viewModel, navController)
                 CustomHorizontalDivider()
-                SettingRowWithTextField(PrefKeys.KEY_LONG_BREAK_TIME, longBreak, viewModel)
+                SettingRowWithText(PrefKeys.KEY_LONG_BREAK_TIME, viewModel, navController)
             }
         }
     }
@@ -75,14 +87,18 @@ fun TimerSetting(
 
 @Composable
 fun NotificationSetting(
-    viewModel: SharedDataViewModel,
+    modifier: Modifier,
+    viewModel: SharedDataViewModel
 ){
     Column(
-        modifier = Modifier.padding(10.dp)
+        modifier = modifier.padding(10.dp)
     ){
-        Text(text = "NOTIFICATION", modifier = Modifier.padding(10.dp))
+        Text(text = "NOTIFICATION", modifier = modifier.padding(10.dp))
         Card{
             val checked by viewModel.ifNotification.collectAsState()
+            val context = LocalContext.current
+            if(checked) RequestNotificationPermission(context)
+
             SettingRowWithSwitch(PrefKeys.KEY_IF_NOTIFICATION, checked, viewModel)
         }
         Spacer(modifier = Modifier.height(10.dp))
@@ -113,26 +129,21 @@ fun NotificationSetting(
 }
 
 @Composable
-fun SettingRowWithTextField(key: String, value: Int, viewModel: SharedDataViewModel){
+fun SettingRowWithText(key: String, viewModel: SharedDataViewModel, navController: NavHostController){
     Row(
-        modifier = Modifier.fillMaxWidth().padding(10.dp),
+        modifier = Modifier
+            .clickable(onClick = {
+                navController.navigate(Screen.Edit.createRoute(key))
+            })
+            .fillMaxWidth()
+            .padding(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ){
         Text(text = key, modifier = Modifier.weight(1f))
         Spacer(modifier = Modifier.weight(1f))
 
-        var text by remember { mutableStateOf(value.toString()) }
-        TextField(
-            value = text,
-            onValueChange = { newText ->
-                text = newText
-                viewModel.updateIntValue(key, text.toInt())
-            },
-            suffix = { Text(" min") },
-            singleLine = true,
-            modifier = Modifier.weight(0.8f),
-            textStyle = TextStyle(textAlign = TextAlign.Left),
-        )
+        val value = viewModel.getIntValueByKey(key)
+        Text(text ="$value min", modifier = Modifier.weight(0.8f))
     }
 }
 
@@ -144,11 +155,15 @@ fun SettingRowWithSwitch(key: String, value: Boolean, viewModel: SharedDataViewM
     ){
         var checked by remember { mutableStateOf(value) }
         Text( text = key, modifier = Modifier.weight(1f))
+        val context = LocalContext.current
         Switch(
             checked = checked,
             onCheckedChange = {
                 checked = it
                 viewModel.updateBooleanValue(key, it)
+                if(key == PrefKeys.KEY_IF_NOTIFICATION && checked){
+                    createNotificationChannel(context)
+                }
             }
         )
     }

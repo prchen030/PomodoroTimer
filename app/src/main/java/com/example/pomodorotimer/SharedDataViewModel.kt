@@ -34,6 +34,15 @@ class SharedDataViewModel @Inject constructor(
     val ifNotification: StateFlow<Boolean> = _ifNotification
     val ifSound: StateFlow<Boolean> = _ifSound
 
+    fun getIntValueByKey(key: String): Int {
+        return when(key){
+            PrefKeys.KEY_POMODORO_TIME -> pomodoroTime.value
+            PrefKeys.KEY_SHORT_BREAK_TIME -> shortBreakTime.value
+            PrefKeys.KEY_LONG_BREAK_TIME -> longBreakTime.value
+            else -> 0
+        }
+    }
+
     fun updateIntValue(key: String, value: Int){
         viewModelScope.launch {
             prefs.edit { putInt(key, value)}

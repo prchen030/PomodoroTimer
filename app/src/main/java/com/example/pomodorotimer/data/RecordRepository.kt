@@ -6,18 +6,19 @@ import javax.inject.Inject
 class RecordRepository @Inject constructor(
     private val recordDao: RecordDao,
 ){
-    val allRecords = recordDao.getAllRecords()
-
     suspend fun getRecordById(id: Long) = recordDao.getRecordById(id)
 
-    suspend fun insertRecord(record: Record) = recordDao.insert(record)
+    suspend fun insertRecord(duration: Double, date: String): Int{
+        val record = Record(duration = duration, date = date)
+        return recordDao.insert(record)
+    }
 
-    suspend fun updateRecord(record: Record) = recordDao.update(record)
+    suspend fun updateRecord(record: java.lang.Record) = recordDao.update(record)
 
-    fun getRecordsByWeek(date: Date) = recordDao.getRecordsByWeek(date)
+    fun getRecordsWithinDays(startDate: String, endDate: String) = recordDao.getRecordsWithinDays(startDate, endDate)
 
-    fun getRecordsByMonth(month: Int) = recordDao.getRecordsByMonth(month)
+    fun getRecordsWithinMonths(startMonth: String, endMonth: String) = recordDao.getRecordsWithinMonths(startMonth, endMonth)
 
-    fun getRecordsByYear(year: Int) = recordDao.getRecordsByYear(year)
+    fun getRecordsWithinYears(startYear: String, endYear: String) = recordDao.getRecordsWithinYears(startYear, endYear)
 
 }
