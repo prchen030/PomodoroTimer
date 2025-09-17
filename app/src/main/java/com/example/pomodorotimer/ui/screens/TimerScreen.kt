@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pomodorotimer.R
 import com.example.pomodorotimer.RecordViewModel
-import com.example.pomodorotimer.SharedDataViewModel
 import com.example.pomodorotimer.TimerStates
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
