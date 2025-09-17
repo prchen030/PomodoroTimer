@@ -35,18 +35,13 @@ class RecordViewModel @Inject constructor(
     val historicalData : StateFlow<List<com.example.pomodorotimer.data.Record?>> = _historicalData
 
     private val _isBreak = MutableStateFlow(false)
-    val isBreak : StateFlow<Boolean> = _isBreak
 
     private val _durationCount =  MutableStateFlow(0)
-    val durationCount : StateFlow<Int> = _durationCount
 
     private val _state =  MutableStateFlow(TimerStates.POMODORO)
     val state : StateFlow<TimerStates> = _state
 
-
     suspend fun insertRecord( duration: Double, date: String): Int = recordRepository.insertRecord(duration, date)
-
-    suspend fun getRecordById(id: Long) = recordRepository.getRecordById(id)
 
     fun setState(){
         return if(!_isBreak.value){

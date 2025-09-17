@@ -10,9 +10,6 @@ interface RecordDao {
     @Insert
     suspend fun insert(record: Record): Int
 
-    @Query("SELECT * FROM records WHERE id = :id")
-    suspend fun getRecordById(id: Long): Record
-
     @Query("SELECT * FROM records WHERE date BETWEEN :startDate AND :endDate GROUP BY date")
     fun getRecordsWithinDays(startDate: String, endDate: String): List<Record?>
 

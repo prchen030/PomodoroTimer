@@ -34,18 +34,16 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun TimerScreen(
     modifier: Modifier = Modifier,
-    sharedDataViewModel: SharedDataViewModel = viewModel(),
     recordViewModel: RecordViewModel = viewModel()
 
 ){
-    TimerView(modifier = modifier, sharedDataViewModel = sharedDataViewModel, recordViewModel = recordViewModel)
+    TimerView(modifier = modifier, recordViewModel = recordViewModel)
 }
 
 
 @Composable
 fun TimerView(
     modifier: Modifier,
-    sharedDataViewModel: SharedDataViewModel,
     recordViewModel: RecordViewModel
 ){
     Column(

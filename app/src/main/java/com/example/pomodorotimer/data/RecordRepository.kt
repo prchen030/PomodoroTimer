@@ -5,7 +5,6 @@ import javax.inject.Inject
 class RecordRepository @Inject constructor(
     private val recordDao: RecordDao,
 ){
-    suspend fun getRecordById(id: Long) = recordDao.getRecordById(id)
 
     suspend fun insertRecord(duration: Double, date: String): Int{
         val record = Record(duration = duration, date = date)
