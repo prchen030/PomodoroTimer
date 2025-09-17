@@ -1,10 +1,6 @@
 package com.example.pomodorotimer.data
 
-import javax.inject.Inject
-
-class RecordRepository @Inject constructor(
-    private val recordDao: RecordDao,
-){
+class RecordRepository(private val recordDao: RecordDao){
 
     suspend fun insertRecord(duration: Double, date: String): Int{
         val record = Record(duration = duration, date = date)

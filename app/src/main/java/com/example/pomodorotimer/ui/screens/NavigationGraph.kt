@@ -17,7 +17,6 @@ fun NavigationGraph(
         startDestination = Screen.Home.route,
         modifier = modifier
     ) {
-
         composable(Screen.Home.route) {
             TimerScreen()
         }

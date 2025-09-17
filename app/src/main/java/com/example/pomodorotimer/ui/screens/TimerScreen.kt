@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -27,14 +28,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pomodorotimer.R
 import com.example.pomodorotimer.RecordViewModel
 import com.example.pomodorotimer.TimerStates
+import org.koin.compose.viewmodel.koinViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
 fun TimerScreen(
     modifier: Modifier = Modifier,
-    recordViewModel: RecordViewModel = viewModel()
-
+    recordViewModel: RecordViewModel = koinViewModel()
 ){
     TimerView(modifier = modifier, recordViewModel = recordViewModel)
 }
@@ -59,6 +60,7 @@ fun TimerView(
         val state by recordViewModel.state.collectAsState()
         val secondsElapsed by recordViewModel.timeLeft.collectAsState()
         var currTime by remember { mutableStateOf(formatTime(secondsElapsed)) }
+        val context = LocalContext.current
 
         TimerText(text = currTime, state = state)
 
@@ -68,7 +70,7 @@ fun TimerView(
                 onClick = {
                     if(!isRunning){
                         isRunning = true
-                        recordViewModel.startCountdown(date = today)
+                        recordViewModel.startCountdown(date = today, context = context)
                     }
             })
 

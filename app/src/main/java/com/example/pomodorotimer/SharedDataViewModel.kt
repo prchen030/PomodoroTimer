@@ -4,17 +4,11 @@ import android.content.Context
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
-import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-@HiltViewModel
-class SharedDataViewModel @Inject constructor(
-    @param:ApplicationContext private val context: Context
-) : ViewModel(){
+class SharedDataViewModel(context: Context) : ViewModel(){
 
     private val prefs = context.getSharedPreferences("my_prefs",Context.MODE_PRIVATE)
     private val _pomodoroTime =

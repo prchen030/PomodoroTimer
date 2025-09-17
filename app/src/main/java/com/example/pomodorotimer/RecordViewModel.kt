@@ -5,8 +5,6 @@ import androidx.core.content.ContextCompat.getString
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pomodorotimer.data.RecordRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,11 +13,8 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import javax.inject.Inject
 
-@HiltViewModel
-class RecordViewModel @Inject constructor(
-    @param:ApplicationContext private val context: Context,
+class RecordViewModel (
     private val recordRepository: RecordRepository,
     private val sharedDataViewModel: SharedDataViewModel
 ) : ViewModel(){
@@ -61,7 +56,7 @@ class RecordViewModel @Inject constructor(
         else -> PrefKeys.KEY_POMODORO_TIME
     }
 
-    fun startCountdown(date: String) {
+    fun startCountdown(date: String, context: Context) {
         job?.cancel()
         val key = setKey(_state.value)
         val duration = sharedDataViewModel.getIntValueByKey(key) * 60
