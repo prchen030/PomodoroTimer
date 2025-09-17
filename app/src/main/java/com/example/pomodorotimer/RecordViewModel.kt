@@ -1,80 +1,137 @@
 package com.example.pomodorotimer
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import android.content.Context
+import androidx.core.content.ContextCompat.getString
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pomodorotimer.data.RecordRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.Month
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
 class RecordViewModel @Inject constructor(
-    private val recordRepository: RecordRepository
+    @param:ApplicationContext private val context: Context,
+    private val recordRepository: RecordRepository,
+    private val sharedDataViewModel: SharedDataViewModel
 ) : ViewModel(){
 
-    private val _recordsWithinDays = MutableLiveData<List<com.example.pomodorotimer.data.Record?>>()
-    val recordsWithDays : LiveData<List<com.example.pomodorotimer.data.Record?>> = _recordsWithinDays
+    private val _timeLeft = MutableStateFlow(0)
+    val timeLeft : StateFlow<Int> = _timeLeft
+    private var job: Job? = null
 
-    private val _recordsWithinMonths = MutableLiveData<List<com.example.pomodorotimer.data.Record?>>()
-    val recordsWithMonths : LiveData<List<com.example.pomodorotimer.data.Record?>> = _recordsWithinMonths
+    private val _chartViewMode = MutableStateFlow(ChartViewMode.WEEK)
+    val chartViewMode: StateFlow<ChartViewMode> = _chartViewMode
 
-    private val _recordsWithinYears = MutableLiveData<List<com.example.pomodorotimer.data.Record?>>()
-    val recordsWithYears : LiveData<List<com.example.pomodorotimer.data.Record?>> = _recordsWithinYears
+    private val _historicalData = MutableStateFlow<List<com.example.pomodorotimer.data.Record?>>(emptyList())
+    val historicalData : StateFlow<List<com.example.pomodorotimer.data.Record?>> = _historicalData
+
+    private val _isBreak = MutableStateFlow(false)
+    val isBreak : StateFlow<Boolean> = _isBreak
+
+    private val _durationCount =  MutableStateFlow(0)
+    val durationCount : StateFlow<Int> = _durationCount
+
+    private val _state =  MutableStateFlow(TimerStates.POMODORO)
+    val state : StateFlow<TimerStates> = _state
+
 
     suspend fun insertRecord( duration: Double, date: String): Int = recordRepository.insertRecord(duration, date)
 
-    suspend fun updateRecord(record: Record) = recordRepository.updateRecord(record)
-
     suspend fun getRecordById(id: Long) = recordRepository.getRecordById(id)
 
-    fun getRecordsWithinDays(date: LocalDate){
-        val list = getConsecutiveDays(date)
-        viewModelScope.launch(Dispatchers.IO) {
-            _recordsWithinDays.postValue(recordRepository.getRecordsWithinDays(list.first(), list.last()))
+    fun setState(){
+        return if(!_isBreak.value){
+            _state.value = TimerStates.POMODORO
+        }else{
+            if(_durationCount.value%4 == 0){
+                _state.value = TimerStates.LONG_BREAK
+            }else{
+                _state.value = TimerStates.SHORT_BREAK
+            }
         }
     }
 
-    fun getRecordsWithinMonths(date: LocalDate){
-        val list = getConsecutiveMonths(date.year, date.month)
-        val startMonth = Month.valueOf(list.first().uppercase()).value.toString()
-        val endMonth = Month.valueOf(list.last().uppercase()).value.toString()
-        viewModelScope.launch(Dispatchers.IO) {
-            _recordsWithinMonths.postValue(recordRepository.getRecordsWithinMonths(startMonth, endMonth))
+    private fun setKey(state: TimerStates) = when(state){
+        TimerStates.SHORT_BREAK -> PrefKeys.KEY_SHORT_BREAK_TIME
+        TimerStates.LONG_BREAK -> PrefKeys.KEY_LONG_BREAK_TIME
+        else -> PrefKeys.KEY_POMODORO_TIME
+    }
+
+    fun startCountdown(date: String) {
+        job?.cancel()
+        val key = setKey(_state.value)
+        val duration = sharedDataViewModel.getIntValueByKey(key) * 60
+        job = viewModelScope.launch {
+            for (i in duration downTo 0) {
+                _timeLeft.value = i
+                delay(1000)
+            }
+            if(!_isBreak.value){
+                insertRecord(duration.toDouble(), date)
+            }
+            _isBreak.value = !_isBreak.value
+            _durationCount.value++
+            setState()
+            sendNotification(context, _isBreak.value)
         }
     }
 
-    fun getRecordsWithinYears(date: LocalDate){
-        val list = getConsecutiveYears(date.year)
-        viewModelScope.launch(Dispatchers.IO) {
-            _recordsWithinYears.postValue(recordRepository.getRecordsWithinYears(list.first(), list.last()))
+    fun pauseCountdown(){
+        job?.cancel()
+    }
+
+    fun setChartViewMode(mode: ChartViewMode) {
+        _chartViewMode.value = mode
+    }
+
+    fun fetchHistoricalData(mode: ChartViewMode, xList: List<String>){
+        viewModelScope.launch {
+             when (mode) {
+                ChartViewMode.WEEK -> recordRepository.getRecordsWithinDays(xList.first(), xList.last())
+                ChartViewMode.MONTH -> recordRepository.getRecordsWithinMonths(xList.first(), xList.last())
+                ChartViewMode.YEAR -> recordRepository.getRecordsWithinYears(xList.first(), xList.last())
+            }
         }
     }
 
-    private fun getConsecutiveYears(startYear: Int): List<String> {
-        return (-1..1).map { offset -> (startYear + offset).toString() }
-    }
-
-    private fun getConsecutiveMonths(year: Int, month: Month): List<String>{
-        val startMonth = YearMonth.of(year, month)
-        return (-2..2).map { offset ->
-            startMonth.plusMonths(offset.toLong())
-                .month
-                .getDisplayName(java.time.format.TextStyle.SHORT, Locale.ENGLISH)
-        }
-    }
-
-    private fun getConsecutiveDays(startDate: LocalDate): List<String>{
+    fun getXAxisData(mode: ChartViewMode, date: LocalDate): List<String> {
+        val year = date.year
+        val month = date.month
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        return (0..6).map { offset ->
-            startDate.minusDays(offset.toLong()).format(formatter)
+        return when (mode) {
+            ChartViewMode.WEEK -> {
+                (0..6).map { offset ->
+                    date.minusDays(offset.toLong()).format(formatter).toString()
+                }.toList()
+            }
+
+            ChartViewMode.MONTH -> {
+                val startMonth = YearMonth.of(year, month)
+                (-2..2).map { offset ->
+                    startMonth.plusMonths(offset.toLong()).month.value.toString()
+                }.toList()
+            }
+
+            ChartViewMode.YEAR -> {
+                (-1..1).map { offset -> (year + offset).toString() }.toList()
+            }
+        }
+    }
+
+    private fun sendNotification(context: Context, isBreak: Boolean){
+        if(isBreak){
+            showNotification(context, getString(context, R.string.notification_message_break))
+        }else{
+            showNotification(context, getString(context, R.string.notification_message_new))
         }
     }
 

@@ -2,24 +2,25 @@
 agp = "8.12.2"
 chart = "1.1"
 hiltAndroid = "2.57.1"
-kotlin = "2.2.10"
+kotlin = "2.2.20"
 coreKtx = "1.17.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.9.3"
-activityCompose = "1.10.1"
+activityCompose = "1.11.0"
 composeBom = "2025.08.01"
 material3 = "1.3.2"
 navigationCompose = "2.9.4"
-roomCommonJvmVersion = "2.7.2"
-roomKtx = "2.7.2"
+roomCommonJvmVersion = "2.8.0"
+roomKtx = "2.8.0"
 ui = "1.9.1"
-uiGraphics = "1.9.0"
-roomCompilerProcessingTesting = "2.7.2"
+uiGraphics = "1.9.1"
+roomCompilerProcessingTesting = "2.8.0"
 playServicesVision = "20.1.3"
 common = "0.10.0"
 navigationRuntimeKtx = "2.9.4"
+foundation = "1.9.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -49,6 +50,7 @@ androidx-room-compiler-processing-testing = { group = "androidx.room", name = "r
 play-services-vision = { group = "com.google.android.gms", name = "play-services-vision", version.ref = "playServicesVision" }
 common = { group = "com.google.ai.client.generativeai", name = "common", version.ref = "common" }
 androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigationRuntimeKtx" }
+androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

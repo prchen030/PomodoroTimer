@@ -6,4 +6,5 @@ object PrefKeys {
     const val KEY_LONG_BREAK_TIME = "Long Break"
     const val KEY_IF_NOTIFICATION = "System Notification"
     const val KEY_IF_SOUND = "Alert Sound"
+
 }

@@ -1,7 +1,6 @@
 package com.example.pomodorotimer.ui.screens
 
 import android.annotation.SuppressLint
-import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -24,27 +23,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat.getString
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.pomodorotimer.R
+import com.example.pomodorotimer.RecordViewModel
 import com.example.pomodorotimer.SharedDataViewModel
 import com.example.pomodorotimer.TimerStates
-import com.example.pomodorotimer.showNotification
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun TimerScreen(
     modifier: Modifier = Modifier,
-    viewModel: SharedDataViewModel = viewModel()
+    sharedDataViewModel: SharedDataViewModel = viewModel(),
+    recordViewModel: RecordViewModel = viewModel()
 
 ){
-    TimerView(modifier = modifier, viewModel = viewModel)
+    TimerView(modifier = modifier, sharedDataViewModel = sharedDataViewModel, recordViewModel = recordViewModel)
 }
 
 
 @Composable
 fun TimerView(
     modifier: Modifier,
-    viewModel: SharedDataViewModel
+    sharedDataViewModel: SharedDataViewModel,
+    recordViewModel: RecordViewModel
 ){
     Column(
         modifier = modifier
@@ -53,16 +55,13 @@ fun TimerView(
             .padding(48.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        val pomodoro by viewModel.pomodoroTime.collectAsState()
-        val shortBreak by viewModel.shortBreakTime.collectAsState()
-        val longBreak by viewModel.longBreakTime.collectAsState()
-
-        var secondsElapsed = pomodoro * 60
-        var countOfPomodoro = 0
         var isRunning by remember { mutableStateOf(false) }
-        var isBreak by remember { mutableStateOf(false) }
+
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val today = LocalDate.now().format(formatter)
+        val state by recordViewModel.state.collectAsState()
+        val secondsElapsed by recordViewModel.timeLeft.collectAsState()
         var currTime by remember { mutableStateOf(formatTime(secondsElapsed)) }
-        var state by remember { mutableStateOf(TimerStates.POMODORO) }
 
         TimerText(text = currTime, state = state)
 
@@ -72,15 +71,15 @@ fun TimerView(
                 onClick = {
                     if(!isRunning){
                         isRunning = true
-                        startCountDown()
+                        recordViewModel.startCountdown(date = today)
                     }
             })
 
-            StopButton(
+            PauseButton(
                 isRunning = isRunning,
                 onClick = {
                     isRunning = false
-                    stopCountDown()
+                    recordViewModel.pauseCountdown()
             })
         }
     }
@@ -121,7 +120,7 @@ fun StartButton(
 }
 
 @Composable
-fun StopButton(
+fun PauseButton(
     isRunning: Boolean,
     onClick: () -> Unit,
 ){
@@ -134,38 +133,7 @@ fun StopButton(
         modifier = Modifier.padding(8.dp),
         enabled = isRunning
     ) {
-        Text(text = "STOP")
-    }
-}
-
-// 能不能写一个可以服用的倒计时模块
-private fun startCountDown(){
-
-}
-
-
-private fun stopCountDown(){
-
-}
-
-// If countdown end, send a notification
-private fun sendNotification(context: Context, isBreak: Boolean){
-    if(isBreak){
-        showNotification(context, getString(context, R.string.notification_message_break))
-    }else{
-        showNotification(context, getString(context, R.string.notification_message_new))
-    }
-}
-
-private fun checkState(isBreak: Boolean, count: Int): TimerStates {
-    return if(!isBreak){
-        TimerStates.POMODORO
-    }else{
-        if(count%2 == 0){
-            TimerStates.LONG_BREAK
-        }else{
-            TimerStates.SHORT_BREAK
-        }
+        Text(text = "PAUSE")
     }
 }
 
@@ -176,12 +144,3 @@ private fun formatTime(secondsElapsed: Int): String {
     val timeFormatted = String.format("%02d:%02d", minutes, seconds)
     return timeFormatted
 }
-
-/*
-@Preview(showBackground = true)
-@Composable
-fun TimerViewPreview(){
-    PomodoroTimerTheme {
-        TimerView(arrayOf(25, 5, 15))
-    }
-}*/

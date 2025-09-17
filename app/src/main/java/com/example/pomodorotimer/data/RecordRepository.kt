@@ -1,6 +1,5 @@
 package com.example.pomodorotimer.data
 
-import java.util.Date
 import javax.inject.Inject
 
 class RecordRepository @Inject constructor(
@@ -12,8 +11,6 @@ class RecordRepository @Inject constructor(
         val record = Record(duration = duration, date = date)
         return recordDao.insert(record)
     }
-
-    suspend fun updateRecord(record: java.lang.Record) = recordDao.update(record)
 
     fun getRecordsWithinDays(startDate: String, endDate: String) = recordDao.getRecordsWithinDays(startDate, endDate)
 

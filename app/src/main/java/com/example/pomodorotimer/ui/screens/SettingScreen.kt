@@ -10,11 +10,14 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -25,25 +28,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat.getString
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import com.example.pomodorotimer.PrefKeys
-import com.example.pomodorotimer.R
 import com.example.pomodorotimer.RequestNotificationPermission
-import com.example.pomodorotimer.Screen
 import com.example.pomodorotimer.SharedDataViewModel
 import com.example.pomodorotimer.createNotificationChannel
-import com.example.pomodorotimer.showNotification
 
 @Composable
 fun SettingScreen(
     modifier: Modifier = Modifier,
     viewModel: SharedDataViewModel = viewModel(),
-    navController: NavHostController
 ){
-    SettingView(modifier = modifier, viewModel = viewModel, navController = navController)
+    SettingView(modifier = modifier, viewModel = viewModel)
 }
 
 
@@ -51,7 +50,6 @@ fun SettingScreen(
 fun SettingView(
     modifier: Modifier,
     viewModel: SharedDataViewModel,
-    navController: NavHostController
 ){
     Column(
         modifier = modifier
@@ -60,7 +58,7 @@ fun SettingView(
             .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        TimerSetting(modifier = modifier, viewModel = viewModel, navController = navController)
+        TimerSetting(modifier = modifier, viewModel = viewModel)
         NotificationSetting(modifier = modifier, viewModel = viewModel)
     }
 }
@@ -69,17 +67,16 @@ fun SettingView(
 fun TimerSetting(
     modifier: Modifier,
     viewModel: SharedDataViewModel,
-    navController: NavHostController
 ){
     Column(modifier = modifier.padding(10.dp)){
         Text(text = "TIMER", modifier = Modifier.padding(10.dp))
         Card{
             Column{
-                SettingRowWithText(PrefKeys.KEY_POMODORO_TIME, viewModel, navController)
+                SettingRowWithText(modifier,PrefKeys.KEY_POMODORO_TIME, viewModel)
                 CustomHorizontalDivider()
-                SettingRowWithText(PrefKeys.KEY_SHORT_BREAK_TIME,  viewModel, navController)
+                SettingRowWithText(modifier,PrefKeys.KEY_SHORT_BREAK_TIME,  viewModel)
                 CustomHorizontalDivider()
-                SettingRowWithText(PrefKeys.KEY_LONG_BREAK_TIME, viewModel, navController)
+                SettingRowWithText(modifier,PrefKeys.KEY_LONG_BREAK_TIME, viewModel)
             }
         }
     }
@@ -129,11 +126,12 @@ fun NotificationSetting(
 }
 
 @Composable
-fun SettingRowWithText(key: String, viewModel: SharedDataViewModel, navController: NavHostController){
+fun SettingRowWithText(modifier: Modifier, key: String, viewModel: SharedDataViewModel){
+    var showDialog by remember { mutableStateOf(false) }
     Row(
         modifier = Modifier
             .clickable(onClick = {
-                navController.navigate(Screen.Edit.createRoute(key))
+                showDialog = true
             })
             .fillMaxWidth()
             .padding(10.dp),
@@ -142,15 +140,78 @@ fun SettingRowWithText(key: String, viewModel: SharedDataViewModel, navControlle
         Text(text = key, modifier = Modifier.weight(1f))
         Spacer(modifier = Modifier.weight(1f))
 
-        val value = viewModel.getIntValueByKey(key)
-        Text(text ="$value min", modifier = Modifier.weight(0.8f))
+        var value = viewModel.getIntValueByKey(key).toString()
+        Text(text ="$value min", modifier = modifier.weight(0.8f))
+
+        if(showDialog){
+            EditDurationDialog(
+                modifier = modifier,
+                key = key,
+                viewModel = viewModel,
+                onConfirm = { newText ->
+                    value = newText
+                    showDialog = false
+                },
+                onDismiss = {
+                    showDialog = false
+                }
+            )
+        }
     }
+}
+
+@Composable
+fun EditDurationDialog(
+    modifier: Modifier,
+    key: String,
+    viewModel: SharedDataViewModel,
+    onConfirm: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val value = viewModel.getIntValueByKey(key)
+    var text by remember { mutableStateOf(value.toString()) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("") },
+        text = {
+            Column {
+                Text("Enter some text:")
+                TextField(
+                    value = text,
+                    onValueChange = { newText ->
+                        text = newText
+                    },
+                    suffix = { Text(" min") },
+                    singleLine = true,
+                    modifier = modifier.fillMaxWidth().padding(48.dp),
+                    textStyle = TextStyle(textAlign = TextAlign.Left),
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirm(text)
+                }
+            ) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 @Composable
 fun SettingRowWithSwitch(key: String, value: Boolean, viewModel: SharedDataViewModel){
     Row(
-        modifier = Modifier.fillMaxWidth().padding(10.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ){
         var checked by remember { mutableStateOf(value) }
@@ -174,11 +235,3 @@ fun CustomHorizontalDivider(){
     HorizontalDivider(thickness = 1.dp, modifier = Modifier.padding(12.dp, 0.dp))
 }
 
-/*
-@Preview(showBackground = true)
-@Composable
-fun SettingViewPreview(){
-    PomodoroTimerTheme {
-        SettingView(viewModel = viewModel())
-    }
-}*/

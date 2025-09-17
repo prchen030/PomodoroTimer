@@ -22,18 +22,23 @@ fun MainScreen(){
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = when (currentRoute) {
-                            Screen.Home.route -> Screen.Home.title
-                            Screen.Setting.route -> Screen.Setting.title
-                            Screen.History.route -> Screen.History.title
-                            Screen.Edit.route -> Screen.Edit.title
-                            else -> ""
-                        }
-                    )
-                }
+            AppToolbar(
+                title  = when (currentRoute) {
+                    Screen.Home.route -> Screen.Home.title
+                    Screen.Setting.route -> Screen.Setting.title
+                    Screen.History.route -> Screen.History.title
+                    else -> ""
+                },
+                showBackButton = when(currentRoute){
+                    Screen.Setting.route -> true
+                    Screen.History.route -> true
+                    else -> false
+                },
+                showMenuButton = when(currentRoute){
+                    Screen.Home.route -> true
+                    else -> false
+                },
+                onBackClick = { navController.popBackStack() }
             )
         },
     ) { innerPadding ->

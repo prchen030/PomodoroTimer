@@ -25,19 +25,11 @@ fun NavigationGraph(
         }
 
         composable(Screen.Setting.route) {
-            SettingScreen(navController = navController)
+            SettingScreen()
         }
 
         composable(Screen.History.route) {
             HistoryScreen()
-        }
-
-        composable(
-            route = Screen.Edit.route,
-            arguments = listOf(navArgument("key") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val key = backStackEntry.arguments?.getString("key") ?: ""
-            EditTextScreen(key = key)
         }
     }
 }

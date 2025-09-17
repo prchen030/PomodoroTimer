@@ -3,7 +3,6 @@ package com.example.pomodorotimer.data
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import androidx.room.Update
 
 @Dao
 interface RecordDao {
@@ -11,13 +10,10 @@ interface RecordDao {
     @Insert
     suspend fun insert(record: Record): Int
 
-    @Update
-    suspend fun update(record: java.lang.Record)
-
     @Query("SELECT * FROM records WHERE id = :id")
     suspend fun getRecordById(id: Long): Record
 
-    @Query("SELECT * FROM records WHERE date BETWEEN :startDate AND :endDate")
+    @Query("SELECT * FROM records WHERE date BETWEEN :startDate AND :endDate GROUP BY date")
     fun getRecordsWithinDays(startDate: String, endDate: String): List<Record?>
 
     @Query("SELECT * FROM records WHERE Month(date) BETWEEN :startMonth AND :endMonth GROUP BY Month(date)")
