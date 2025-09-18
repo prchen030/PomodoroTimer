@@ -56,9 +56,9 @@ dependencies {
     implementation(platform(libs.koin.bom))
 
     // Kotlin & coroutines
-    implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json")
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.serialization.json)
 
     // AndroidX
     implementation(libs.androidx.core.ktx)

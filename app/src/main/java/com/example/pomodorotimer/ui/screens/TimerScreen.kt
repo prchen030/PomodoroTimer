@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.sp
 import com.example.pomodorotimer.R
 import com.example.pomodorotimer.RecordViewModel
 import com.example.pomodorotimer.TimerStates
-import org.koin.compose.viewmodel.koinViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
