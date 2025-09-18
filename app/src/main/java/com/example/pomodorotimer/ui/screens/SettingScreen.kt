@@ -35,14 +35,13 @@ import com.example.pomodorotimer.PrefKeys
 import com.example.pomodorotimer.RequestNotificationPermission
 import com.example.pomodorotimer.SharedDataViewModel
 import com.example.pomodorotimer.createNotificationChannel
-import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun SettingScreen(
     modifier: Modifier = Modifier,
-    viewModel: SharedDataViewModel = koinViewModel()
+    sharedDataViewModel: SharedDataViewModel
 ){
-    SettingView(modifier = modifier, viewModel = viewModel)
+    SettingView(modifier = modifier, viewModel = sharedDataViewModel)
 }
 
 

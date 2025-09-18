@@ -12,11 +12,11 @@ class SharedDataViewModel(context: Context) : ViewModel(){
 
     private val prefs = context.getSharedPreferences("my_prefs",Context.MODE_PRIVATE)
     private val _pomodoroTime =
-        MutableStateFlow(prefs.getInt(PrefKeys.KEY_POMODORO_TIME, R.integer.default_duration))
+        MutableStateFlow(prefs.getInt(PrefKeys.KEY_POMODORO_TIME, TimerStates.POMODORO.default))
     private val _shortBreakTime =
-        MutableStateFlow(prefs.getInt(PrefKeys.KEY_SHORT_BREAK_TIME, R.integer.default_short_break))
+        MutableStateFlow(prefs.getInt(PrefKeys.KEY_SHORT_BREAK_TIME, TimerStates.SHORT_BREAK.default))
     private val _longBreakTime =
-        MutableStateFlow(prefs.getInt(PrefKeys.KEY_LONG_BREAK_TIME, R.integer.default_short_break))
+        MutableStateFlow(prefs.getInt(PrefKeys.KEY_LONG_BREAK_TIME, TimerStates.LONG_BREAK.default))
     val pomodoroTime: StateFlow<Int> = _pomodoroTime
     val shortBreakTime: StateFlow<Int> = _shortBreakTime
     val longBreakTime: StateFlow<Int> = _longBreakTime

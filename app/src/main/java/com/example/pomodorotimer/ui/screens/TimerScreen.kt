@@ -1,6 +1,7 @@
 package com.example.pomodorotimer.ui.screens
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -12,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,7 +36,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun TimerScreen(
     modifier: Modifier = Modifier,
-    recordViewModel: RecordViewModel = koinViewModel()
+    recordViewModel: RecordViewModel
 ){
     TimerView(modifier = modifier, recordViewModel = recordViewModel)
 }
@@ -52,14 +54,17 @@ fun TimerView(
             .padding(48.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        var isRunning by remember { mutableStateOf(false) }
+        var _isRunning by remember { mutableStateOf(false) }
 
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         val today = LocalDate.now().format(formatter)
         val state by recordViewModel.state.collectAsState()
-        val secondsElapsed by recordViewModel.timeLeft.collectAsState()
+        val duration by recordViewModel.timeLeft.collectAsState()
+        val secondsElapsed by remember { mutableIntStateOf(duration * 60) }
         var currTime by remember { mutableStateOf(formatTime(secondsElapsed)) }
         val context = LocalContext.current
+
+        Log.i("TimeScreen", secondsElapsed.toString())
 
         TimerText(text = currTime, state = state)
 
@@ -67,16 +72,16 @@ fun TimerView(
             StartButton(
                 state = state,
                 onClick = {
-                    if(!isRunning){
-                        isRunning = true
+                    if(!_isRunning){
+                        _isRunning = true
                         recordViewModel.startCountdown(date = today, context = context)
                     }
             })
 
             PauseButton(
-                isRunning = isRunning,
+                isRunning = _isRunning,
                 onClick = {
-                    isRunning = false
+                    _isRunning = false
                     recordViewModel.pauseCountdown()
             })
         }

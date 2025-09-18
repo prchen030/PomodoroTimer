@@ -25,16 +25,15 @@ import com.aay.compose.lineChart.model.LineParameters
 import com.aay.compose.lineChart.model.LineType
 import com.example.pomodorotimer.ChartViewMode
 import com.example.pomodorotimer.RecordViewModel
-import org.koin.compose.viewmodel.koinViewModel
 import java.time.LocalDate
 
 
 @Composable
 fun HistoryScreen(
     modifier: Modifier = Modifier,
-    viewModel: RecordViewModel = koinViewModel()
+    recordViewModel: RecordViewModel
 ){
-    ChartViewWithSegmentedButton(modifier = modifier, viewModel = viewModel)
+    ChartViewWithSegmentedButton(modifier = modifier, viewModel = recordViewModel)
 }
 
 @Composable

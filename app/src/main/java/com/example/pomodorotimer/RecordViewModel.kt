@@ -1,6 +1,7 @@
 package com.example.pomodorotimer
 
 import android.content.Context
+import android.util.Log
 import androidx.core.content.ContextCompat.getString
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,7 +12,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
 class RecordViewModel (
@@ -36,7 +36,11 @@ class RecordViewModel (
     private val _state =  MutableStateFlow(TimerStates.POMODORO)
     val state : StateFlow<TimerStates> = _state
 
-    suspend fun insertRecord( duration: Double, date: String): Int = recordRepository.insertRecord(duration, date)
+    init {
+        _timeLeft.value = sharedDataViewModel.pomodoroTime.value
+    }
+
+    suspend fun insertRecord( duration: Double, date: String) = recordRepository.insertRecord(duration, date)
 
     fun setState(){
         return if(!_isBreak.value){
@@ -63,6 +67,7 @@ class RecordViewModel (
         job = viewModelScope.launch {
             for (i in duration downTo 0) {
                 _timeLeft.value = i
+                Log.i("RecordViewModel", _timeLeft.value.toString())
                 delay(1000)
             }
             if(!_isBreak.value){
@@ -94,24 +99,23 @@ class RecordViewModel (
     }
 
     fun getXAxisData(mode: ChartViewMode, date: LocalDate): List<String> {
-        val year = date.year
-        val month = date.month
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         return when (mode) {
             ChartViewMode.WEEK -> {
+                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
                 (0..6).map { offset ->
                     date.minusDays(offset.toLong()).format(formatter).toString()
                 }.toList()
             }
 
             ChartViewMode.MONTH -> {
-                val startMonth = YearMonth.of(year, month)
+                val formatter = DateTimeFormatter.ofPattern("yyyy-MM")
                 (-2..2).map { offset ->
-                    startMonth.plusMonths(offset.toLong()).month.value.toString()
+                    LocalDate.from(date).plusMonths(offset.toLong()).format(formatter).toString()
                 }.toList()
             }
 
             ChartViewMode.YEAR -> {
+                val year = date.year
                 (-1..1).map { offset -> (year + offset).toString() }.toList()
             }
         }
