@@ -1,4 +1,4 @@
-package com.example.pomodorotimer
+package com.example.pomodorotimer.units
 
 import android.Manifest
 import android.app.NotificationChannel
@@ -15,6 +15,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat.getString
+import com.example.pomodorotimer.R
 
 @Composable
 fun RequestNotificationPermission(context: Context) {

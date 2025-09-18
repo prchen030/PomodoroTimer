@@ -7,6 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.platform.LocalContext
 import com.example.pomodorotimer.ui.screens.MainScreen
 import com.example.pomodorotimer.ui.theme.PomodoroTimerTheme
+import com.example.pomodorotimer.viewModel.RecordViewModel
+import com.example.pomodorotimer.viewModel.SharedDataViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 
@@ -26,5 +28,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
 }
 

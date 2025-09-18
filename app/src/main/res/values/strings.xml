@@ -7,4 +7,5 @@
     <string name="notification_title">"Pomodoro Timer"</string>
     <string name="notification_message_break">"Congratulations! You can take a break right now."</string>
     <string name="notification_message_new">"Let's start a new Pomodoro!"</string>
+    <string name="error_msg_input">"Invalid input\. Please input number 1\-999"</string>
 </resources>

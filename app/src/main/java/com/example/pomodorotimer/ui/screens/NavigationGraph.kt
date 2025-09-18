@@ -5,9 +5,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.pomodorotimer.RecordViewModel
-import com.example.pomodorotimer.Screen
-import com.example.pomodorotimer.SharedDataViewModel
+import com.example.pomodorotimer.viewModel.RecordViewModel
+import com.example.pomodorotimer.units.Screen
+import com.example.pomodorotimer.viewModel.SharedDataViewModel
 
 @Composable
 fun NavigationGraph(

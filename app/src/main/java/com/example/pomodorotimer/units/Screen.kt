@@ -1,4 +1,4 @@
-package com.example.pomodorotimer
+package com.example.pomodorotimer.units
 
 sealed class Screen(val route: String, val title: String) {
     object Home : Screen("home", "Pomodoro")

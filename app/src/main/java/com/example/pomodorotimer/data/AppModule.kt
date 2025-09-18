@@ -2,8 +2,8 @@ package com.example.pomodorotimer.data
 
 import android.app.Application
 import androidx.room.Room
-import com.example.pomodorotimer.RecordViewModel
-import com.example.pomodorotimer.SharedDataViewModel
+import com.example.pomodorotimer.viewModel.RecordViewModel
+import com.example.pomodorotimer.viewModel.SharedDataViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 

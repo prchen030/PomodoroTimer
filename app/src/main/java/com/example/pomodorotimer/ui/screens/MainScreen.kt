@@ -23,9 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.pomodorotimer.RecordViewModel
-import com.example.pomodorotimer.Screen
-import com.example.pomodorotimer.SharedDataViewModel
+import com.example.pomodorotimer.viewModel.RecordViewModel
+import com.example.pomodorotimer.units.Screen
+import com.example.pomodorotimer.viewModel.SharedDataViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,12 +42,12 @@ fun MainScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    when (currentRoute) {
-                        Screen.Home.route -> Screen.Home.title
-                        Screen.Setting.route -> Screen.Setting.title
-                        Screen.History.route -> Screen.History.title
-                        else -> ""
-                    }
+                  Text(text = when (currentRoute) {
+                      Screen.Home.route -> Screen.Home.title
+                      Screen.Setting.route -> Screen.Setting.title
+                      Screen.History.route -> Screen.History.title
+                      else -> ""
+                  })
                 },
                 navigationIcon = {
                     if (currentRoute == Screen.Setting.route || currentRoute == Screen.History.route) {

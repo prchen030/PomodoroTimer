@@ -1,9 +1,10 @@
 package com.example.pomodorotimer.ui.screens
 
 import android.annotation.SuppressLint
-import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,11 +13,9 @@ import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -27,8 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.example.pomodorotimer.R
-import com.example.pomodorotimer.RecordViewModel
-import com.example.pomodorotimer.TimerStates
+import com.example.pomodorotimer.viewModel.RecordViewModel
+import com.example.pomodorotimer.units.TimerStates
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -49,38 +48,31 @@ fun TimerView(
     Column(
         modifier = modifier
             .fillMaxHeight()
-            .fillMaxWidth()
-            .padding(48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceEvenly
     ){
-        var _isRunning by remember { mutableStateOf(false) }
-
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         val today = LocalDate.now().format(formatter)
-        val state by recordViewModel.state.collectAsState()
-        val duration by recordViewModel.timeLeft.collectAsState()
-        val secondsElapsed by remember { mutableIntStateOf(duration * 60) }
-        var currTime by remember { mutableStateOf(formatTime(secondsElapsed)) }
         val context = LocalContext.current
 
-        Log.i("TimeScreen", secondsElapsed.toString())
+        val state by recordViewModel.state.collectAsState()
+        val isRunning by recordViewModel.isRunning.collectAsState()
+        val secondsElapsed by recordViewModel.timeLeft.collectAsState()
+        val currTime by remember { derivedStateOf {formatTime(secondsElapsed)} }
 
         TimerText(text = currTime, state = state)
-
+        Spacer( modifier = modifier)
         Row{
             StartButton(
                 state = state,
                 onClick = {
-                    if(!_isRunning){
-                        _isRunning = true
-                        recordViewModel.startCountdown(date = today, context = context)
-                    }
+                    recordViewModel.startCountdown(date = today, context = context)
             })
 
             PauseButton(
-                isRunning = _isRunning,
+                isRunning = isRunning,
                 onClick = {
-                    _isRunning = false
                     recordViewModel.pauseCountdown()
             })
         }

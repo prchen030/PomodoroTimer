@@ -1,20 +1,27 @@
-package com.example.pomodorotimer
+package com.example.pomodorotimer.viewModel
 
 import android.content.Context
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.pomodorotimer.units.PrefKeys
+import com.example.pomodorotimer.units.TimerStates
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class SharedDataViewModel(context: Context) : ViewModel(){
 
-    private val prefs = context.getSharedPreferences("my_prefs",Context.MODE_PRIVATE)
+    private val prefs = context.getSharedPreferences("my_prefs", Context.MODE_PRIVATE)
     private val _pomodoroTime =
         MutableStateFlow(prefs.getInt(PrefKeys.KEY_POMODORO_TIME, TimerStates.POMODORO.default))
     private val _shortBreakTime =
-        MutableStateFlow(prefs.getInt(PrefKeys.KEY_SHORT_BREAK_TIME, TimerStates.SHORT_BREAK.default))
+        MutableStateFlow(
+            prefs.getInt(
+                PrefKeys.KEY_SHORT_BREAK_TIME,
+                TimerStates.SHORT_BREAK.default
+            )
+        )
     private val _longBreakTime =
         MutableStateFlow(prefs.getInt(PrefKeys.KEY_LONG_BREAK_TIME, TimerStates.LONG_BREAK.default))
     val pomodoroTime: StateFlow<Int> = _pomodoroTime
@@ -27,6 +34,13 @@ class SharedDataViewModel(context: Context) : ViewModel(){
         MutableStateFlow(prefs.getBoolean(PrefKeys.KEY_IF_SOUND, false))
     val ifNotification: StateFlow<Boolean> = _ifNotification
     val ifSound: StateFlow<Boolean> = _ifSound
+
+    private val _isGranted = MutableStateFlow(false)
+    val isGranted : StateFlow<Boolean> = _isGranted
+
+    fun setGrantValue(){
+        _isGranted.value = true
+    }
 
     fun getIntValueByKey(key: String): Int {
         return when(key){
@@ -61,5 +75,3 @@ class SharedDataViewModel(context: Context) : ViewModel(){
     }
 
 }
-
-
