@@ -3,7 +3,6 @@ package com.example.pomodorotimer.data
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import org.jetbrains.annotations.NotNull
 
 @Dao
 interface RecordDao {
@@ -12,33 +11,28 @@ interface RecordDao {
     suspend fun insert(record: Record)
 
     @Query("""
-        SELECT date as date, 
-            SUM(duration) AS total 
+        SELECT :date AS date,
+            IFNULL(SUM(duration), 0.0) AS total 
         FROM records 
-        WHERE date BETWEEN :startDate AND :endDate 
-        GROUP BY date
+        WHERE date = :date
     """)
-    suspend fun getRecordsWithinDays(startDate: String, endDate: String): List<DateTotal>?
+    suspend fun getRecordByDay(date: String): DateTotal
 
     @Query("""
-        SELECT CAST(substr(date, 1, 4) AS INTEGER) AS year,
-           CAST(substr(date, 6, 2) AS INTEGER) AS month,
-           SUM(duration) AS total
+        SELECT CAST(substr(`date`, 1, 4) AS INTEGER) AS year,
+           CAST(substr(`date`, 6, 2) AS INTEGER) AS month,
+           IFNULL(SUM(duration), 0.0) AS total
         FROM records
-        WHERE substr(date, 1, 7) BETWEEN :startMonth AND :endMonth
-        GROUP BY year, month
-        ORDER BY year, month
+        WHERE substr(date, 1, 7) = :month
     """)
-    suspend fun getRecordsWithinMonths(startMonth: String, endMonth: String): List<YearMonthTotal>?
+    suspend fun getRecordByMonth(month: String): YearMonthTotal
 
     @Query("""
-        SELECT CAST(substr(date, 1, 4) AS INTEGER) AS year,
-            SUM(duration) AS total
+        SELECT :year AS year,
+            IFNULL(SUM(duration), 0.0) AS total
         FROM records
-        WHERE year BETWEEN :startYear AND :endYear
-        GROUP BY year
-        ORDER BY year
+        WHERE substr(`date`, 1, 4) = :year
     """)
-    suspend fun getRecordsWithinYears(startYear: String, endYear: String): List<YearTotal>?
+    suspend fun getRecordByYear(year: String): YearTotal
 
 }

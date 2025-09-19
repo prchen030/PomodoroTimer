@@ -1,5 +1,6 @@
 package com.example.pomodorotimer.ui.screens
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,6 +43,7 @@ fun HistoryScreen(
     ChartViewWithSegmentedButton(modifier = modifier, viewModel = recordViewModel)
 }
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun ChartViewWithSegmentedButton(
     modifier: Modifier,
@@ -56,8 +58,9 @@ fun ChartViewWithSegmentedButton(
         val today = LocalDate.now()
         val chartMode by viewModel.chartViewMode.collectAsState()
         val chartData by viewModel.historicalData.collectAsState()
-        var xList = viewModel.getXAxisData(chartMode, today)
-        Log.i("HistoryScreen", "${chartData.size}")
+        val xList by derivedStateOf { chartData.map { it.xValue } }
+        val yList by derivedStateOf { chartData.map { it.yValue } }
+        Log.i("HistoryScreen", "${chartMode}: ${chartData.size}")
 
         SingleChoiceSegmentedButtonRow {
             options.forEachIndexed { index, label ->
@@ -68,9 +71,7 @@ fun ChartViewWithSegmentedButton(
                     ),
                     onClick = {
                         selectedIndex = index
-                        viewModel.setChartViewMode(label)
-                        xList = viewModel.getXAxisData(chartMode, today)
-                        viewModel.fetchHistoricalData(chartMode, xList)
+                        viewModel.setChartViewMode(label, today)
                     },
                     selected = index == selectedIndex,
                     label = { Text(label.name) }
@@ -80,14 +81,8 @@ fun ChartViewWithSegmentedButton(
 
         ChartView(
             modifier = modifier.padding(20.dp),
-            xList = if(chartMode.name == "WEEK"){
-                xList.map { it.substring(5,10) }
-            } else xList,
-            yList = (if(chartData.isEmpty()) {
-                List(xList.size){ 0.0 }
-            } else{
-                chartData.map{ it?.yValue ?: 0.0 }
-            })
+            xList = xList,
+            yList = yList
         )
     }
 }

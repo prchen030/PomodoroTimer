@@ -7,10 +7,10 @@ class RecordRepository(private val recordDao: RecordDao){
         recordDao.insert(record)
     }
 
-    suspend fun getRecordsWithinDays(startDate: String, endDate: String) = recordDao.getRecordsWithinDays(startDate, endDate)
+    suspend fun getRecordByDay(date: String) = recordDao.getRecordByDay(date)
 
-    suspend fun getRecordsWithinMonths(startMonth: String, endMonth: String) = recordDao.getRecordsWithinMonths(startMonth, endMonth)
+    suspend fun getRecordByMonth(month: String) = recordDao.getRecordByMonth(month)
 
-    suspend fun getRecordsWithinYears(startYear: String, endYear: String) = recordDao.getRecordsWithinYears(startYear, endYear)
+    suspend fun getRecordByYear(year: String) = recordDao.getRecordByYear(year)
 
 }

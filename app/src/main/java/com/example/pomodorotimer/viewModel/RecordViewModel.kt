@@ -8,10 +8,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.pomodorotimer.units.ChartViewMode
 import com.example.pomodorotimer.units.PrefKeys
 import com.example.pomodorotimer.R
+import com.example.pomodorotimer.data.AxisData
 import com.example.pomodorotimer.units.TimerStates
 import com.example.pomodorotimer.data.Record
 import com.example.pomodorotimer.data.RecordRepository
 import com.example.pomodorotimer.data.YValueProvider
+import com.example.pomodorotimer.data.YearMonthTotal
 import com.example.pomodorotimer.units.showNotification
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -34,8 +36,8 @@ class RecordViewModel (
     private val _chartViewMode = MutableStateFlow(ChartViewMode.WEEK)
     val chartViewMode: StateFlow<ChartViewMode> = _chartViewMode.asStateFlow()
 
-    private val _historicalData = MutableStateFlow<List<YValueProvider?>>(emptyList())
-    val historicalData : StateFlow<List<YValueProvider?>> = _historicalData
+    private val _historicalData = MutableStateFlow<List<AxisData>>(emptyList())
+    val historicalData : StateFlow<List<AxisData>> = _historicalData
 
     private val _isRunning = MutableStateFlow(false)
     val isRunning : StateFlow<Boolean> = _isRunning
@@ -51,16 +53,7 @@ class RecordViewModel (
 
     init {
         _timeLeft.value = sharedDataViewModel.pomodoroTime.value * MINUTE_SECONDS
-        val xList = getXAxisData(mode = chartViewMode.value, LocalDate.now())
-        fetchHistoricalData(mode = chartViewMode.value, xList = xList)
-        print(xList)
-    }
-
-    fun print(xList: List<String>){
-        viewModelScope.launch {
-            val list = recordRepository.getRecordsWithinDays(xList.first(), xList.last())
-            list?.forEach { println("$${it.yValue} ${it.date}") }
-        }
+        setChartViewMode(_chartViewMode.value, LocalDate.now())
     }
 
     suspend fun insertRecord( duration: Double, date: String) = recordRepository.insertRecord(duration, date)
@@ -130,44 +123,42 @@ class RecordViewModel (
         job = null
     }
 
-    fun setChartViewMode(mode: ChartViewMode) {
-        _chartViewMode.value = mode
-    }
-
-    fun fetchHistoricalData(mode: ChartViewMode, xList: List<String>){
+    fun setChartViewMode(mode: ChartViewMode, date: LocalDate) {
         viewModelScope.launch {
-             when (mode) {
-                ChartViewMode.WEEK -> _historicalData.value =
-                    recordRepository.getRecordsWithinDays(xList.first(), xList.last())!!
-                ChartViewMode.MONTH -> _historicalData.value =
-                    recordRepository.getRecordsWithinMonths(xList.first(), xList.last())!!
-                ChartViewMode.YEAR -> _historicalData.value =
-                    recordRepository.getRecordsWithinYears(xList.first(), xList.last())!!
-            }
+            _chartViewMode.value = mode
+            _historicalData.value = getAxisDataList(mode, date)
         }
     }
 
-    fun getXAxisData(mode: ChartViewMode, date: LocalDate): List<String> {
-        return when (mode) {
-            ChartViewMode.WEEK -> {
+    suspend fun getAxisDataList(mode: ChartViewMode, date: LocalDate): List<AxisData>{
+        val list = mutableListOf<AxisData>()
+         when(mode){
+            ChartViewMode.WEEK->{
                 val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
                 (-3..3).map { offset ->
-                    date.plusDays(offset.toLong()).format(formatter).toString()
-                }.toList()
+                    val newDate = date.plusDays(offset.toLong()).format(formatter)
+                    val dateTotal = recordRepository.getRecordByDay(newDate)
+                    list.add(AxisData(newDate.substring(6,10), dateTotal.yValue))
+                }
             }
-
-            ChartViewMode.MONTH -> {
-                val formatter = DateTimeFormatter.ofPattern("yyyy-MM")
-                (-2..2).map { offset ->
-                    LocalDate.from(date).plusMonths(offset.toLong()).format(formatter).toString()
-                }.toList()
-            }
-
-            ChartViewMode.YEAR -> {
-                val year = date.year
-                (-2..2).map { offset -> (year + offset).toString() }.toList()
-            }
+             ChartViewMode.MONTH->{
+                 val formatter = DateTimeFormatter.ofPattern("yyyy-MM")
+                 (-2..2).map { offset ->
+                     val newMonth = LocalDate.from(date).plusMonths(offset.toLong()).format(formatter)
+                     val yearMonthTotal = recordRepository.getRecordByMonth(newMonth)
+                     list.add(AxisData(newMonth, yearMonthTotal.yValue))
+                 }
+             }
+             ChartViewMode.YEAR->{
+                 val year = date.year
+                 (-2..2).map { offset ->
+                     val newYear = (year + offset).toString()
+                     val yearTotal = recordRepository.getRecordByYear(newYear)
+                     list.add(AxisData(newYear, yearTotal.yValue))
+                 }
+             }
         }
+        return  list
     }
 
     private fun sendNotification(context: Context, isBreak: Boolean){
