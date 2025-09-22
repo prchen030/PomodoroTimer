@@ -16,9 +16,10 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat.getString
 import com.example.pomodorotimer.R
+import com.example.pomodorotimer.viewModel.SettingViewModel
 
 @Composable
-fun RequestNotificationPermission(context: Context) {
+fun RequestNotificationPermission(context: Context, viewModel: SettingViewModel) {
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
@@ -27,6 +28,7 @@ fun RequestNotificationPermission(context: Context) {
             } else {
                 Toast.makeText(context, "Notification permission denied", Toast.LENGTH_SHORT).show()
             }
+            viewModel.setGrantValue(isGranted)
         }
     )
     LaunchedEffect(Unit) {

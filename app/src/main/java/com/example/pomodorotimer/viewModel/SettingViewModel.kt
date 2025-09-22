@@ -33,8 +33,8 @@ class SettingViewModel(
     private val _isGranted = MutableStateFlow(false)
     val isGranted : StateFlow<Boolean> = _isGranted
 
-    fun setGrantValue(){
-        _isGranted.value = true
+    fun setGrantValue(isGranted: Boolean){
+        _isGranted.value = isGranted
     }
 
     fun updateIntValue(key: String, value: Int){

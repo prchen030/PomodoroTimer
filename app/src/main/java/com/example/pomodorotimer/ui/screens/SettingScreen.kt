@@ -110,8 +110,7 @@ fun NotificationSetting(
             val isGranted by viewModel.isGranted.collectAsState()
             val context = LocalContext.current
             if(checked && !isGranted) {
-                RequestNotificationPermission(context)
-                viewModel.setGrantValue()
+                RequestNotificationPermission(context, viewModel)
             }
             SettingRowWithSwitch(PrefKeys.KEY_IF_NOTIFICATION, checked, viewModel)
         }
