@@ -28,8 +28,6 @@ import androidx.compose.ui.unit.sp
 import com.example.pomodorotimer.R
 import com.example.pomodorotimer.viewModel.RecordViewModel
 import com.example.pomodorotimer.units.TimerStates
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun TimerScreen(

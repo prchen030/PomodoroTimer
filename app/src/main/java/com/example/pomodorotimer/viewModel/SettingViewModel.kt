@@ -1,6 +1,5 @@
 package com.example.pomodorotimer.viewModel
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pomodorotimer.data.SettingRepository
