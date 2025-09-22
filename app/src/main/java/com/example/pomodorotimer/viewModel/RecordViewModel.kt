@@ -1,33 +1,50 @@
 package com.example.pomodorotimer.viewModel
 
 import android.content.Context
-import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pomodorotimer.units.ChartViewMode
-import com.example.pomodorotimer.units.PrefKeys
 import com.example.pomodorotimer.R
 import com.example.pomodorotimer.data.AxisData
 import com.example.pomodorotimer.units.TimerStates
-import com.example.pomodorotimer.data.Record
 import com.example.pomodorotimer.data.RecordRepository
-import com.example.pomodorotimer.data.YValueProvider
-import com.example.pomodorotimer.data.YearMonthTotal
+import com.example.pomodorotimer.data.SettingRepository
 import com.example.pomodorotimer.units.showNotification
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 class RecordViewModel (
     private val recordRepository: RecordRepository,
-    private val sharedDataViewModel: SharedDataViewModel
+    private val settingRepository: SettingRepository
 ) : ViewModel(){
+
+    val pomodoroTime = settingRepository.pomodoroMode.stateIn(
+        viewModelScope,
+        SharingStarted.Eagerly,
+        TimerStates.POMODORO.default
+    )
+
+    val shortBreakTime = settingRepository.shortBreakMode.stateIn(
+        viewModelScope,
+        SharingStarted.Eagerly,
+        TimerStates.SHORT_BREAK.default
+    )
+
+    val longBreakTime = settingRepository.longBreakMode.stateIn(
+        viewModelScope,
+        SharingStarted.Eagerly,
+        TimerStates.LONG_BREAK.default
+    )
 
     private val _timeLeft = MutableStateFlow(0)
     val timeLeft : StateFlow<Int> = _timeLeft
@@ -39,9 +56,6 @@ class RecordViewModel (
     private val _historicalData = MutableStateFlow<List<AxisData>>(emptyList())
     val historicalData : StateFlow<List<AxisData>> = _historicalData
 
-    private val _isRunning = MutableStateFlow(false)
-    val isRunning : StateFlow<Boolean> = _isRunning
-
     private val _isBreak = MutableStateFlow(false)
 
     private val _durationCount = MutableStateFlow(0)
@@ -49,65 +63,67 @@ class RecordViewModel (
     private val _state = MutableStateFlow(TimerStates.POMODORO)
     val state : StateFlow<TimerStates> = _state
 
-    private var isPause = false
+    private val _isRunning = MutableStateFlow(false)
+    val isRunning : StateFlow<Boolean> = _isRunning
+
+    private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    private val today = LocalDate.now().format(formatter)
 
     init {
-        _timeLeft.value = sharedDataViewModel.pomodoroTime.value * MINUTE_SECONDS
+        viewModelScope.launch {
+            combine(_state, pomodoroTime, shortBreakTime, longBreakTime, _isRunning)
+            { state, pomo, short, long, isRunning ->
+                if (!isRunning) {
+                    when (state) {
+                        TimerStates.POMODORO -> pomo * MINUTE_SECONDS
+                        TimerStates.SHORT_BREAK -> short * MINUTE_SECONDS
+                        TimerStates.LONG_BREAK -> long * MINUTE_SECONDS
+                    }
+                } else {
+                    _timeLeft.value
+                }
+            }.collect { newTime ->
+                _timeLeft.value = newTime
+            }
+        }
+
         setChartViewMode(_chartViewMode.value, LocalDate.now())
     }
 
-    suspend fun insertRecord( duration: Double, date: String) = recordRepository.insertRecord(duration, date)
+    fun insertRecord(
+        duration: Double,
+        date: String
+    ) = viewModelScope.launch {
+        recordRepository.insertRecord(duration, date)
+    }
 
-    fun setState(){
-        return if(!_isBreak.value){
-            _state.value = TimerStates.POMODORO
-        }else{
-            if(_durationCount.value%4 == 0){
-                _state.value = TimerStates.LONG_BREAK
-            }else{
-                _state.value = TimerStates.SHORT_BREAK
-            }
+    private fun setState() {
+        _state.value = if (!_isBreak.value) {
+            TimerStates.POMODORO
+        } else if (_durationCount.value % 4 == 0) {
+            TimerStates.LONG_BREAK
+        } else {
+            TimerStates.SHORT_BREAK
         }
     }
 
-    private fun setKey(state: TimerStates) = when(state){
-        TimerStates.SHORT_BREAK -> PrefKeys.KEY_SHORT_BREAK_TIME
-        TimerStates.LONG_BREAK -> PrefKeys.KEY_LONG_BREAK_TIME
-        else -> PrefKeys.KEY_POMODORO_TIME
-    }
-
-    fun startCountdown(date: String, context: Context) {
-
-        if(!_isRunning.value){
-            _isRunning.value = true
-            var key = setKey(_state.value)
-            val mins = sharedDataViewModel.getIntValueByKey(key)
-            if(!isPause) {
-                job?.cancel()
-                _timeLeft.value = mins * MINUTE_SECONDS
-            }
-            val duration = _timeLeft.value
-
-            job = viewModelScope.launch {
-                for (i in duration downTo 0) {
-                    _timeLeft.value = i
+    fun startCountdown(context: Context){
+        job?.cancel()
+        job = viewModelScope.launch {
+            if(!_isRunning.value){
+                _isRunning.value = true
+                val mins = (_timeLeft.value / MINUTE_SECONDS).toDouble()
+                while (_timeLeft.value > 0) {
                     delay(1000)
+                    _timeLeft.value -= 1
                 }
                 if(!_isBreak.value){
                     _durationCount.value++
-                    insertRecord(mins.toDouble(), date)
+                    insertRecord(mins, today)
                 }
-
-                Log.i(
-                    "RecordViewModel",
-                    "${state.value}: ${_durationCount.value} Pomodoro"
-                )
                 _isBreak.value = !_isBreak.value
                 _isRunning.value = false
                 setState()
-                key = setKey(_state.value)
-                _timeLeft.value = sharedDataViewModel.getIntValueByKey(key) * MINUTE_SECONDS
-
                 sendNotification(context, _isBreak.value)
             }
         }
@@ -115,7 +131,7 @@ class RecordViewModel (
 
     fun pauseCountdown(){
         _isRunning.value = false
-        isPause = true
+        job?.cancel()
     }
 
     fun cancelCountdown(){
@@ -130,7 +146,7 @@ class RecordViewModel (
         }
     }
 
-    suspend fun getAxisDataList(mode: ChartViewMode, date: LocalDate): List<AxisData>{
+    private suspend fun getAxisDataList(mode: ChartViewMode, date: LocalDate): List<AxisData>{
         val list = mutableListOf<AxisData>()
          when(mode){
             ChartViewMode.WEEK->{
@@ -138,7 +154,7 @@ class RecordViewModel (
                 (-3..3).map { offset ->
                     val newDate = date.plusDays(offset.toLong()).format(formatter)
                     val dateTotal = recordRepository.getRecordByDay(newDate)
-                    list.add(AxisData(newDate.substring(6,10), dateTotal.yValue))
+                    list.add(AxisData(newDate.substring(6,10), dateTotal.total))
                 }
             }
              ChartViewMode.MONTH->{
@@ -146,7 +162,7 @@ class RecordViewModel (
                  (-2..2).map { offset ->
                      val newMonth = LocalDate.from(date).plusMonths(offset.toLong()).format(formatter)
                      val yearMonthTotal = recordRepository.getRecordByMonth(newMonth)
-                     list.add(AxisData(newMonth, yearMonthTotal.yValue))
+                     list.add(AxisData(newMonth, yearMonthTotal.total))
                  }
              }
              ChartViewMode.YEAR->{
@@ -154,7 +170,7 @@ class RecordViewModel (
                  (-2..2).map { offset ->
                      val newYear = (year + offset).toString()
                      val yearTotal = recordRepository.getRecordByYear(newYear)
-                     list.add(AxisData(newYear, yearTotal.yValue))
+                     list.add(AxisData(newYear, yearTotal.total))
                  }
              }
         }

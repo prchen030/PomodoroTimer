@@ -33,7 +33,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -43,22 +42,22 @@ import androidx.core.content.ContextCompat.getString
 import com.example.pomodorotimer.R
 import com.example.pomodorotimer.units.PrefKeys
 import com.example.pomodorotimer.units.RequestNotificationPermission
-import com.example.pomodorotimer.viewModel.SharedDataViewModel
+import com.example.pomodorotimer.viewModel.SettingViewModel
 import com.example.pomodorotimer.units.createNotificationChannel
 
 @Composable
 fun SettingScreen(
     modifier: Modifier = Modifier,
-    sharedDataViewModel: SharedDataViewModel
+    settingViewModel: SettingViewModel
 ){
-    SettingView(modifier = modifier, viewModel = sharedDataViewModel)
+    SettingView(modifier = modifier, viewModel = settingViewModel)
 }
 
 
 @Composable
 fun SettingView(
     modifier: Modifier,
-    viewModel: SharedDataViewModel,
+    viewModel: SettingViewModel,
 ){
     Column(
         modifier = modifier
@@ -75,17 +74,23 @@ fun SettingView(
 @Composable
 fun TimerSetting(
     modifier: Modifier,
-    viewModel: SharedDataViewModel,
+    viewModel: SettingViewModel,
 ){
     Column(modifier = modifier.padding(10.dp)){
         Text(text = "TIMER", modifier = Modifier.padding(10.dp))
         Card{
             Column{
-                SettingRowWithText(modifier,PrefKeys.KEY_POMODORO_TIME, viewModel)
+
+                val pomodoroTime by viewModel.pomodoroTime.collectAsState()
+                val shortBreakTime by viewModel.shortBreakTime.collectAsState()
+                val longBreakTime by viewModel.longBreakTime.collectAsState()
+
+                SettingRowWithText(modifier,PrefKeys.KEY_POMODORO_TIME, viewModel, pomodoroTime)
                 CustomHorizontalDivider()
-                SettingRowWithText(modifier,PrefKeys.KEY_SHORT_BREAK_TIME,  viewModel)
+                SettingRowWithText(modifier,PrefKeys.KEY_SHORT_BREAK_TIME,  viewModel, shortBreakTime)
                 CustomHorizontalDivider()
-                SettingRowWithText(modifier,PrefKeys.KEY_LONG_BREAK_TIME, viewModel)
+                SettingRowWithText(modifier,PrefKeys.KEY_LONG_BREAK_TIME, viewModel, longBreakTime)
+
             }
         }
     }
@@ -94,7 +99,7 @@ fun TimerSetting(
 @Composable
 fun NotificationSetting(
     modifier: Modifier,
-    viewModel: SharedDataViewModel
+    viewModel: SettingViewModel
 ){
     Column(
         modifier = modifier.padding(10.dp)
@@ -141,7 +146,8 @@ fun NotificationSetting(
 fun SettingRowWithText(
     modifier: Modifier,
     key: String,
-    viewModel: SharedDataViewModel
+    viewModel: SettingViewModel,
+    text: Int
 ){
     var showDialog by remember { mutableStateOf(false) }
     Row(
@@ -157,14 +163,13 @@ fun SettingRowWithText(
         Text(text = key)
         Spacer(modifier = Modifier.weight(1f))
 
-        var value = viewModel.getIntValueByKey(key).toString()
+        var value = text.toString()
         Text(text ="$value min", modifier = modifier)
 
         if(showDialog){
             EditDurationDialog(
                 modifier = modifier,
-                key = key,
-                viewModel = viewModel,
+                value = value,
                 onConfirm = { newText ->
                     value = newText
                     viewModel.updateIntValue(key, value.toInt())
@@ -181,14 +186,12 @@ fun SettingRowWithText(
 @Composable
 fun EditDurationDialog(
     modifier: Modifier,
-    key: String,
-    viewModel: SharedDataViewModel,
+    value: String,
     onConfirm: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
-    val value = viewModel.getIntValueByKey(key)
-    var text by remember { mutableStateOf(value.toString()) }
+    var text by remember { mutableStateOf(value) }
     val isValid = text.isNotEmpty() &&
             text.toInt() > 0 &&
             text.length <= 3 &&
@@ -254,7 +257,7 @@ fun EditDurationDialog(
 fun SettingRowWithSwitch(
     key: String,
     value: Boolean,
-    viewModel: SharedDataViewModel
+    viewModel: SettingViewModel
 ){
     Row(
         modifier = Modifier

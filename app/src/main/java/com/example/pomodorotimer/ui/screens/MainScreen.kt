@@ -25,13 +25,13 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.pomodorotimer.viewModel.RecordViewModel
 import com.example.pomodorotimer.units.Screen
-import com.example.pomodorotimer.viewModel.SharedDataViewModel
+import com.example.pomodorotimer.viewModel.SettingViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     recordViewModel: RecordViewModel,
-    sharedDataViewModel: SharedDataViewModel
+    settingViewModel: SettingViewModel
 ){
     val navController = rememberNavController()
     val currentBackStackEntry = navController.currentBackStackEntryAsState()
@@ -73,7 +73,7 @@ fun MainScreen(
             navController = navController,
             modifier = Modifier.padding(innerPadding),
             recordViewModel = recordViewModel,
-            sharedDataViewModel = sharedDataViewModel
+            settingViewModel = settingViewModel
         )
 
     }

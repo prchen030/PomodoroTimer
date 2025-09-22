@@ -7,14 +7,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.pomodorotimer.viewModel.RecordViewModel
 import com.example.pomodorotimer.units.Screen
-import com.example.pomodorotimer.viewModel.SharedDataViewModel
+import com.example.pomodorotimer.viewModel.SettingViewModel
 
 @Composable
 fun NavigationGraph(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     recordViewModel: RecordViewModel,
-    sharedDataViewModel: SharedDataViewModel
+    settingViewModel: SettingViewModel
 ) {
     NavHost(
         navController,
@@ -26,7 +26,7 @@ fun NavigationGraph(
         }
 
         composable(Screen.Setting.route) {
-            SettingScreen(sharedDataViewModel = sharedDataViewModel)
+            SettingScreen(settingViewModel = settingViewModel)
         }
 
         composable(Screen.History.route) {

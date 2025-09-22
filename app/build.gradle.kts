@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    kotlin("kapt")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -70,6 +70,8 @@ dependencies {
     implementation(libs.androidx.foundation)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.datastore.core)
+    implementation(libs.androidx.datastore.preferences.core)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
@@ -80,7 +82,8 @@ dependencies {
     // Room
     implementation(libs.androidx.room.common.jvm)
     implementation(libs.androidx.room.ktx)
-    kapt(libs.androidx.room.compiler)
+    //noinspection KaptUsageInsteadOfKsp
+    ksp(libs.androidx.room.compiler)
     testImplementation(libs.androidx.room.compiler.processing.testing)
 
     // Other dependencies
@@ -97,5 +100,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.ui.test.junit4)
+
+    implementation(libs.androidx.datastore.preferences)
 }

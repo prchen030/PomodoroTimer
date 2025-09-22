@@ -52,14 +52,12 @@ fun TimerView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly
     ){
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        val today = LocalDate.now().format(formatter)
         val context = LocalContext.current
 
         val state by recordViewModel.state.collectAsState()
+        val timeLeft by recordViewModel.timeLeft.collectAsState()
         val isRunning by recordViewModel.isRunning.collectAsState()
-        val secondsElapsed by recordViewModel.timeLeft.collectAsState()
-        val currTime by remember { derivedStateOf {formatTime(secondsElapsed)} }
+        val currTime by remember { derivedStateOf {formatTime(timeLeft)} }
 
         TimerText(text = currTime, state = state)
         Spacer( modifier = modifier)
@@ -67,7 +65,7 @@ fun TimerView(
             StartButton(
                 state = state,
                 onClick = {
-                    recordViewModel.startCountdown(date = today, context = context)
+                    recordViewModel.startCountdown(context = context)
             })
 
             PauseButton(
