@@ -25,4 +25,7 @@ This is my first Android project developed using Jetpack Compose. It's a customi
 - AndroidX components
 - [AAY-Chart](https://github.com/TheChance101/AAY-chart?utm_source=chatgpt.com)
 
+## 🎯 Future Improvements
+- [ ] Add unit and UI tests
+
 ### 📧 prchen030@gmail.com
