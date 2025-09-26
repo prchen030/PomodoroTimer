@@ -24,9 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.pomodorotimer.ui.navigation.NavigationGraph
-import com.example.pomodorotimer.viewModel.RecordViewModel
 import com.example.pomodorotimer.ui.navigation.Screen
-import com.example.pomodorotimer.viewModel.SettingViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
