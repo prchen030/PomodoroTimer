@@ -3,7 +3,7 @@ package com.example.pomodorotimer.data
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
-import com.example.pomodorotimer.units.TimerStates
+import com.example.pomodorotimer.model.TimerStates
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.example.pomodorotimer.R
 import com.example.pomodorotimer.viewModel.RecordViewModel
-import com.example.pomodorotimer.units.TimerStates
+import com.example.pomodorotimer.model.TimerStates
 
 @Composable
 fun TimerScreen(

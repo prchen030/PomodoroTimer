@@ -4,13 +4,13 @@ import android.content.Context
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.pomodorotimer.units.ChartViewMode
+import com.example.pomodorotimer.model.ChartViewMode
 import com.example.pomodorotimer.R
 import com.example.pomodorotimer.data.AxisData
-import com.example.pomodorotimer.units.TimerStates
+import com.example.pomodorotimer.model.TimerStates
 import com.example.pomodorotimer.data.RecordRepository
 import com.example.pomodorotimer.data.SettingRepository
-import com.example.pomodorotimer.units.showNotification
+import com.example.pomodorotimer.model.showNotification
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -71,6 +71,8 @@ class RecordViewModel (
 
     init {
         viewModelScope.launch {
+            _historicalData.value = getAxisDataList(_chartViewMode.value, LocalDate.now())
+
             combine(_state, pomodoroTime, shortBreakTime, longBreakTime, _isRunning)
             { state, pomo, short, long, isRunning ->
                 if (!isRunning) {
@@ -86,8 +88,6 @@ class RecordViewModel (
                 _timeLeft.value = newTime
             }
         }
-
-        setChartViewMode(_chartViewMode.value, LocalDate.now())
     }
 
     fun insertRecord(

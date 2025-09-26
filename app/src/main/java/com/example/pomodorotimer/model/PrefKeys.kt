@@ -1,4 +1,4 @@
-package com.example.pomodorotimer.units
+package com.example.pomodorotimer.model
 
 object PrefKeys {
     const val KEY_POMODORO_TIME = "Pomodoro"

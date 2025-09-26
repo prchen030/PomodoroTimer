@@ -3,8 +3,8 @@ package com.example.pomodorotimer.viewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pomodorotimer.data.SettingRepository
-import com.example.pomodorotimer.units.PrefKeys
-import com.example.pomodorotimer.units.TimerStates
+import com.example.pomodorotimer.model.PrefKeys
+import com.example.pomodorotimer.model.TimerStates
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

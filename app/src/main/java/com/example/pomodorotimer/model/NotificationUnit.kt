@@ -1,4 +1,4 @@
-package com.example.pomodorotimer.units
+package com.example.pomodorotimer.model
 
 import android.Manifest
 import android.app.NotificationChannel

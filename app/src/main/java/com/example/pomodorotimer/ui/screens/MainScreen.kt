@@ -23,16 +23,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.pomodorotimer.ui.navigation.NavigationGraph
 import com.example.pomodorotimer.viewModel.RecordViewModel
-import com.example.pomodorotimer.units.Screen
+import com.example.pomodorotimer.ui.navigation.Screen
 import com.example.pomodorotimer.viewModel.SettingViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(
-    recordViewModel: RecordViewModel,
-    settingViewModel: SettingViewModel
-){
+fun MainScreen(){
     val navController = rememberNavController()
     val currentBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry.value?.destination?.route ?: Screen.Home.route
@@ -71,11 +69,8 @@ fun MainScreen(
     ) { innerPadding ->
         NavigationGraph(
             navController = navController,
-            modifier = Modifier.padding(innerPadding),
-            recordViewModel = recordViewModel,
-            settingViewModel = settingViewModel
+            modifier = Modifier.padding(innerPadding)
         )
-
     }
 }
 

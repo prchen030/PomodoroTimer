@@ -1,6 +1,7 @@
 package com.example.pomodorotimer.ui.screens
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,7 +28,7 @@ import com.aay.compose.baseComponents.model.GridOrientation
 import com.aay.compose.lineChart.LineChart
 import com.aay.compose.lineChart.model.LineParameters
 import com.aay.compose.lineChart.model.LineType
-import com.example.pomodorotimer.units.ChartViewMode
+import com.example.pomodorotimer.model.ChartViewMode
 import com.example.pomodorotimer.viewModel.RecordViewModel
 import java.time.LocalDate
 
@@ -57,7 +58,6 @@ fun ChartViewWithSegmentedButton(
         val chartData by viewModel.historicalData.collectAsState()
         val xList by derivedStateOf { chartData.map { it.xValue } }
         val yList by derivedStateOf { chartData.map { it.yValue } }
-
         viewModel.setChartViewMode(chartMode, today)
 
         SingleChoiceSegmentedButtonRow {

@@ -40,10 +40,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.getString
 import com.example.pomodorotimer.R
-import com.example.pomodorotimer.units.PrefKeys
-import com.example.pomodorotimer.units.RequestNotificationPermission
+import com.example.pomodorotimer.model.PrefKeys
+import com.example.pomodorotimer.model.RequestNotificationPermission
 import com.example.pomodorotimer.viewModel.SettingViewModel
-import com.example.pomodorotimer.units.createNotificationChannel
+import com.example.pomodorotimer.model.createNotificationChannel
 
 @Composable
 fun SettingScreen(
