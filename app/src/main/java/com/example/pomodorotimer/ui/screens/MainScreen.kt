@@ -21,12 +21,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.pomodorotimer.ui.navigation.NavigationGraph
 import com.example.pomodorotimer.ui.navigation.Screen
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(){
     val navController = rememberNavController()
@@ -36,33 +36,12 @@ fun MainScreen(){
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = {
-                  Text(text = when (currentRoute) {
-                      Screen.Home.route -> Screen.Home.title
-                      Screen.Setting.route -> Screen.Setting.title
-                      Screen.History.route -> Screen.History.title
-                      else -> ""
-                  })
-                },
-                navigationIcon = {
-                    if (currentRoute == Screen.Setting.route || currentRoute == Screen.History.route) {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(
-                                Icons.AutoMirrored.Rounded.ArrowBack,
-                                contentDescription = "Back"
-                            )
-                        }
-                    } else null
-                },
-                actions = {
-                    if(currentRoute == Screen.Home.route) {
-                        DropdownMenu(
-                            { navController.navigate(Screen.Setting.route) },
-                            { navController.navigate(Screen.History.route)})
-                    }
-                }
-            )
+            when(currentRoute){
+                Screen.Home.route -> AppTopBar(Screen.Home, navController)
+                Screen.Setting.route -> AppTopBar(Screen.Setting, navController)
+                Screen.History.route -> AppTopBar(Screen.History, navController)
+            }
+
         },
     ) { innerPadding ->
         NavigationGraph(
@@ -71,6 +50,42 @@ fun MainScreen(){
         )
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AppTopBar(screen: Screen, navController: NavController){
+    TopAppBar(
+        title = {
+            Text(text = screen.title)
+        },
+        navigationIcon = {
+            DisplayBackButton(screen.displayBackButton, navController)
+        },
+        actions = {
+            DisplayDropdownMenu(screen.displayMenu, navController)
+        }
+    )
+}
+
+@Composable
+fun DisplayBackButton(value: Boolean, navController: NavController) =
+    if (value) {
+        IconButton(onClick = { navController.popBackStack() }) {
+            Icon(
+                Icons.AutoMirrored.Rounded.ArrowBack,
+                contentDescription = "Back"
+            )
+        }
+    } else null
+
+@Composable
+fun DisplayDropdownMenu(value: Boolean, navController: NavController) =
+    if (value){
+        DropdownMenu(
+            { navController.navigate(Screen.Setting.route) },
+            { navController.navigate(Screen.History.route)})
+    } else null
+
 
 @Composable
 fun DropdownMenu(
