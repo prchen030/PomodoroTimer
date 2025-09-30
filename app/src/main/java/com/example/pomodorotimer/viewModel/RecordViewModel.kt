@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pomodorotimer.model.ChartViewMode
 import com.example.pomodorotimer.R
-import com.example.pomodorotimer.data.AxisData
 import com.example.pomodorotimer.model.TimerStates
 import com.example.pomodorotimer.data.RecordRepository
 import com.example.pomodorotimer.data.SettingRepository
@@ -53,8 +52,11 @@ class RecordViewModel (
     private val _chartViewMode = MutableStateFlow(ChartViewMode.WEEK)
     val chartViewMode: StateFlow<ChartViewMode> = _chartViewMode.asStateFlow()
 
-    private val _historicalData = MutableStateFlow<List<AxisData>>(emptyList())
-    val historicalData : StateFlow<List<AxisData>> = _historicalData
+    private val _xAxisData = MutableStateFlow<List<String>>(emptyList())
+    val xAxisData : StateFlow<List<String>> = _xAxisData
+
+    private val _yAxisData = MutableStateFlow<List<Double>>(emptyList())
+    val yAxisData : StateFlow<List<Double>> = _yAxisData
 
     private val _isBreak = MutableStateFlow(false)
 
@@ -71,7 +73,7 @@ class RecordViewModel (
 
     init {
         viewModelScope.launch {
-            _historicalData.value = getAxisDataList(_chartViewMode.value, LocalDate.now())
+            setAxisDataList(_chartViewMode.value, LocalDate.now())
 
             combine(_state, pomodoroTime, shortBreakTime, longBreakTime, _isRunning)
             { state, pomo, short, long, isRunning ->
@@ -142,19 +144,21 @@ class RecordViewModel (
     fun setChartViewMode(mode: ChartViewMode, date: LocalDate) {
         viewModelScope.launch {
             _chartViewMode.value = mode
-            _historicalData.value = getAxisDataList(mode, date)
+            setAxisDataList(mode, date)
         }
     }
 
-    private suspend fun getAxisDataList(mode: ChartViewMode, date: LocalDate): List<AxisData>{
-        val list = mutableListOf<AxisData>()
+    private suspend fun setAxisDataList(mode: ChartViewMode, date: LocalDate){
+        val newXList = mutableListOf<String>()
+        val newYList = mutableListOf<Double>()
          when(mode){
             ChartViewMode.WEEK->{
                 val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
                 (-3..3).map { offset ->
                     val newDate = date.plusDays(offset.toLong()).format(formatter)
                     val dateTotal = recordRepository.getRecordByDay(newDate)
-                    list.add(AxisData(newDate.substring(6,10), dateTotal.total))
+                    newXList.add(newDate.substring(6,10))
+                    newYList.add(dateTotal.total)
                 }
             }
              ChartViewMode.MONTH->{
@@ -162,7 +166,8 @@ class RecordViewModel (
                  (-2..2).map { offset ->
                      val newMonth = LocalDate.from(date).plusMonths(offset.toLong()).format(formatter)
                      val yearMonthTotal = recordRepository.getRecordByMonth(newMonth)
-                     list.add(AxisData(newMonth, yearMonthTotal.total))
+                     newXList.add(newMonth)
+                     newYList.add(yearMonthTotal.total)
                  }
              }
              ChartViewMode.YEAR->{
@@ -170,11 +175,13 @@ class RecordViewModel (
                  (-2..2).map { offset ->
                      val newYear = (year + offset).toString()
                      val yearTotal = recordRepository.getRecordByYear(newYear)
-                     list.add(AxisData(newYear, yearTotal.total))
+                     newXList.add(newYear)
+                     newYList.add(yearTotal.total)
                  }
              }
         }
-        return  list
+        _xAxisData.value = newXList
+        _yAxisData.value = newYList
     }
 
     private fun sendNotification(context: Context, isBreak: Boolean){

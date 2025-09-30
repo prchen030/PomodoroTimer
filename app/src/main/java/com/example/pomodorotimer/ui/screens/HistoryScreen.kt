@@ -54,9 +54,8 @@ fun ChartViewWithSegmentedButton(
         val options = enumValues<ChartViewMode>()
         val today = LocalDate.now()
         val chartMode by viewModel.chartViewMode.collectAsState()
-        val chartData by viewModel.historicalData.collectAsState()
-        val xList by derivedStateOf { chartData.map { it.xValue } }
-        val yList by derivedStateOf { chartData.map { it.yValue } }
+        val xList by viewModel.xAxisData.collectAsState()
+        val yList by viewModel.yAxisData.collectAsState()
         viewModel.setChartViewMode(chartMode, today)
 
         SingleChoiceSegmentedButtonRow {

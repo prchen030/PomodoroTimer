@@ -68,7 +68,7 @@ fun AppTopBar(screen: Screen, navController: NavController){
 }
 
 @Composable
-fun DisplayBackButton(value: Boolean, navController: NavController) =
+fun DisplayBackButton(value: Boolean, navController: NavController){
     if (value) {
         IconButton(onClick = { navController.popBackStack() }) {
             Icon(
@@ -77,14 +77,18 @@ fun DisplayBackButton(value: Boolean, navController: NavController) =
             )
         }
     } else null
+}
 
 @Composable
-fun DisplayDropdownMenu(value: Boolean, navController: NavController) =
-    if (value){
+fun DisplayDropdownMenu(value: Boolean, navController: NavController) {
+    if (value) {
         DropdownMenu(
-            { navController.navigate(Screen.Setting.route) },
-            { navController.navigate(Screen.History.route)})
+            navSettingScreen = {
+                navController.navigate(Screen.Setting.route) },
+            navHistoryScreen = {
+                navController.navigate(Screen.History.route) })
     } else null
+}
 
 
 @Composable
